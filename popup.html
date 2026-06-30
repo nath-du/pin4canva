@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<title>Pin4Canva</title>
+<link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <h1>Pin4Canva</h1>
+    <div class="tab-lista">
+      <button id="tabCerca" class="tab active">Cerca</button>
+      <button id="tabSalvati" class="tab">Collezione <span id="conteggioSalvati">0</span></button>
+    </div>
+  </header>
+
+  <section id="vistaCerca">
+    <form id="formCerca">
+      <input id="inputCerca" type="text" placeholder="Cerca" autofocus />
+      <button type="submit">Cerca</button>
+    </form>
+    <p id="suggerimento" class="suggerimento">Benvenuto! Inizia a cercare qualcosa...</p>
+    <div id="statoCerca" class="stato"></div>
+    <div id="risultatiCerca" class="grid"></div>
+  </section>
+
+  <section id="vistaSalvati" class="nascosto">
+    <div id="risultatiSalvati" class="grid"></div>
+  </section>
+
+  <script src="popup.js"></script>
+</body>
+</html>
