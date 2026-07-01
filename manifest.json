@@ -2,12 +2,13 @@
   "manifest_version": 3,
   "name": "Pin4Canva",
   "version": "1.1.0",
-  "description": "Elementi gratuiti per Canva: Cerca da Pinterest, trascina su Canva.",
+  "description": "ELementi gratuiti per Canva: Cerca da Pinterest, rimuovi sfondo, trascina su Canva.",
   "permissions": ["storage", "tabs", "scripting", "clipboardWrite"],
   "host_permissions": [
     "https://*.pinterest.com/*",
     "https://*.pinimg.com/*",
-    "https://*.canva.com/*"
+    "https://*.canva.com/*",
+    "https://api.remove.bg/*"
   ],
   "action": {
     "default_popup": "popup.html",

@@ -17,7 +17,7 @@ function attendiCaricamentoTab(tabId) {
 }
 
 // Estrattore immagini da Pinterest
-function estraiPinInPagina(limite) {
+function estrattorePin(limite) {
   function ottieniSorgenteMigliore(img) {
     const candidati = [
       img.currentSrc,
@@ -73,7 +73,7 @@ async function cercaSuPinterest(query) {
 
       const iniezione = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: estraiPinInPagina,
+        func: estrattorePin,
         args: [40],
       });
       risultati = iniezione?.[0]?.result || [];
@@ -84,11 +84,45 @@ async function cercaSuPinterest(query) {
   }
 }
 
+// Chiama API remove.bg
+async function rimuoviSfondo(imageUrl, apiKey) {
+  if (!apiKey) throw new Error("API Key missing");
+  
+  const formData = new FormData();
+  formData.append("image_url", imageUrl);
+  formData.append("size", "auto");
+
+  const risposta = await fetch("https://api.remove.bg/v1.0/removebg", {
+    method: "POST",
+    headers: { "X-Api-Key": apiKey },
+    body: formData,
+  });
+
+  if (!risposta.ok) {
+    const datiErrore = await risposta.json().catch(() => ({}));
+    throw new Error(datiErrore.errors?.[0]?.title || "Background removal error");
+  }
+
+  const blob = await risposta.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
+
 // Gestione messaggi
 chrome.runtime.onMessage.addListener((messaggio, mittente, inviaRisposta) => {
   if (messaggio?.azione === "cercaSuPinterest") {
     cercaSuPinterest(messaggio.query)
       .then((risultati) => inviaRisposta({ ok: true, risultati }))
+      .catch((err) => inviaRisposta({ ok: false, errore: err?.message || String(err) }));
+    return true;
+  }
+
+  if (messaggio?.azione === "rimuoviBg") {
+    rimuoviSfondo(messaggio.imageUrl, messaggio.apiKey)
+      .then((dataUrl) => inviaRisposta({ ok: true, dataUrl }))
       .catch((err) => inviaRisposta({ ok: false, errore: err?.message || String(err) }));
     return true;
   }

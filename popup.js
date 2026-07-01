@@ -10,6 +10,8 @@ const statoCerca = document.getElementById("statoCerca");
 const risultatiCerca = document.getElementById("risultatiCerca");
 const risultatiSalvati = document.getElementById("risultatiSalvati");
 const conteggioSalvatiEl = document.getElementById("conteggioSalvati");
+const autoRimuoviBgToggle = document.getElementById("autoRimuoviBg");
+const chiaveRemoveBgInput = document.getElementById("chiaveRemoveBg");
 
 function cambiaTab(nome) {
   const eCerca = nome === "cerca";
@@ -45,7 +47,37 @@ async function rimuoviPin(src) {
 
 async function gestisciAggiuntaPin(pin, cardDiv) {
   const btn = cardDiv.querySelector("button");
-  const aggiunto = await aggiungiPin({ ...pin });
+  const apiKey = chiaveRemoveBgInput.value.trim();
+  const autoRimuovi = autoRimuoviBgToggle.checked;
+
+  let pinDaSalvare = { ...pin };
+
+  if (autoRimuovi && apiKey) {
+    const overlay = document.createElement("div");
+    overlay.className = "overlay-elaborazione";
+    overlay.textContent = "Rimuovo sfondo...";
+    cardDiv.appendChild(overlay);
+    
+    try {
+      const risposta = await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ azione: "rimuoviBg", imageUrl: pin.src, apiKey }, resolve);
+      });
+
+      if (risposta.ok) {
+        pinDaSalvare.originalSrc = pin.src;
+        pinDaSalvare.src = risposta.dataUrl;
+        pinDaSalvare.noBg = true;
+      } else {
+        alert("Errore rimozione: " + risposta.errore);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      overlay.remove();
+    }
+  }
+
+  const aggiunto = await aggiungiPin(pinDaSalvare);
   btn.textContent = aggiunto ? "Aggiunto" : "È già salvato!";
   btn.classList.add("aggiunto");
 }
@@ -102,7 +134,18 @@ formCerca.addEventListener("submit", async (e) => {
   });
 });
 
+// Salva impostazioni
+autoRimuoviBgToggle.addEventListener("change", () => {
+  chrome.storage.local.set({ autoRimuoviBg: autoRimuoviBgToggle.checked });
+});
+chiaveRemoveBgInput.addEventListener("input", () => {
+  chrome.storage.local.set({ chiaveRemoveBg: chiaveRemoveBgInput.value });
+});
+
 (async function inizializza() {
   const lista = await ottieniSalvati();
   conteggioSalvatiEl.textContent = lista.length;
+  const impostazioni = await chrome.storage.local.get(["autoRimuoviBg", "chiaveRemoveBg"]);
+  autoRimuoviBgToggle.checked = !!impostazioni.autoRimuoviBg;
+  chiaveRemoveBgInput.value = impostazioni.chiaveRemoveBg || "";
 })();

@@ -19,7 +19,13 @@
       <input id="inputCerca" type="text" placeholder="Cerca" autofocus />
       <button type="submit">Cerca</button>
     </form>
-    <p id="suggerimento" class="suggerimento">Benvenuto! Inizia a cercare qualcosa...</p>
+    <div class="opzioni">
+      <label class="toggle-container">
+        <input type="checkbox" id="autoRimuoviBg">
+        <span class="toggle-label">Rimuovi sfondo automaticamente</span>
+      </label>
+      <input type="password" id="chiaveRemoveBg" placeholder="Remove.bg API Key" class="api-input">
+    </div>
     <div id="statoCerca" class="stato"></div>
     <div id="risultatiCerca" class="grid"></div>
   </section>
