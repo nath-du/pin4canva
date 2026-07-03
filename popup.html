@@ -1,38 +1,88 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8" />
-<title>Pin4Canva</title>
-<link rel="stylesheet" href="popup.css" />
+  <meta charset="UTF-8" />
+  <title>Pin4Canva</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
-  <header>
-    <h1>Pin4Canva</h1>
-    <div class="tab-lista">
-      <button id="tabCerca" class="tab active">Cerca</button>
-      <button id="tabSalvati" class="tab">Collezione <span id="conteggioSalvati">0</span></button>
-    </div>
+
+  <!-- App bar -->
+  <header class="app-bar">
+    <span class="app-title">
+      <span class="material-icons">push_pin</span>
+      Pin4Canva
+    </span>
+    <button class="settings-btn" id="settingsBtn" aria-label="Impostazioni">
+      <span class="material-icons">settings</span>
+    </button>
   </header>
 
-  <section id="vistaCerca">
-    <form id="formCerca">
-      <input id="inputCerca" type="text" placeholder="Cerca" autofocus />
-      <button type="submit">Cerca</button>
-    </form>
-    <div class="opzioni">
-      <label class="toggle-container">
-        <input type="checkbox" id="autoRimuoviBg">
-        <span class="toggle-label">Rimuovi sfondo automaticamente</span>
-      </label>
-      <input type="password" id="chiaveRemoveBg" placeholder="Remove.bg API Key" class="api-input">
+  <!-- Tabs -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-tab="search" role="tab" aria-selected="true">
+      <span class="material-icons" style="font-size:18px;">search</span>
+      Search
+    </button>
+    <button class="tab" data-tab="collection" role="tab" aria-selected="false">
+      <span class="material-icons" style="font-size:18px;">folder</span>
+      Your Collection
+      <span class="badge" id="collectionBadge">0</span>
+    </button>
+  </div>
+
+  <!-- Vista Cerca -->
+  <section id="searchView" class="view" role="tabpanel">
+    <div class="search-bar">
+      <div class="text-field">
+        <span class="material-icons prefix">search</span>
+        <input type="text" id="searchInput" placeholder="Search on Pinterest…" autofocus />
+      </div>
+      <button class="btn-primary" id="searchBtn">
+        <span class="material-icons">arrow_forward</span>
+      </button>
     </div>
-    <div id="statoCerca" class="stato"></div>
-    <div id="risultatiCerca" class="grid"></div>
+
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="autoRemoveBg" />
+        <span class="slider"></span>
+      </label>
+      <span class="toggle-label">Background remover</span>
+    </div>
+
+    <div id="status" class="status"></div>
+    <div id="resultsGrid" class="grid"></div>
   </section>
 
-  <section id="vistaSalvati" class="nascosto">
-    <div id="risultatiSalvati" class="grid"></div>
+  <!-- Vista Collezione -->
+  <section id="collectionView" class="view hidden" role="tabpanel">
+    <div id="collectionGrid" class="grid"></div>
   </section>
+
+  <!-- Dialog impostazioni -->
+  <div id="settingsDialog" class="dialog-overlay hidden" role="dialog" aria-modal="true">
+    <div class="dialog">
+      <div class="dialog-header">
+        <span>Settings</span>
+        <button class="dialog-close" id="settingsClose" aria-label="Chiudi">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="dialog-body">
+        <div class="text-field-outlined">
+          <label for="apiKeyInput">Remove.bg API Key</label>
+          <input type="password" id="apiKeyInput" placeholder="Your API Key Here" autocomplete="off" />
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button class="btn-text" id="settingsCancel">Cancel</button>
+        <button class="btn-primary" id="settingsSave">Save</button>
+      </div>
+    </div>
+  </div>
 
   <script src="popup.js"></script>
 </body>

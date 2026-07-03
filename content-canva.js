@@ -7,12 +7,39 @@
   function creaToggle() {
     const btn = document.createElement("button");
     btn.id = ID_TOGGLE;
-    btn.textContent = "📌";
+    btn.title = "Apri Pin";
+    
+    // Bottone lato canva
+    const imgToggle = document.createElement("img");
+    imgToggle.src = chrome.runtime.getURL("icons/icon128-nobg.png");
+    imgToggle.alt = "Toggle";
+    imgToggle.style.width = "100%";
+    imgToggle.style.height = "100%";
+    imgToggle.style.objectFit = "contain";
+    
+    btn.appendChild(imgToggle);
+    
+    // Stile bottone
+    btn.style.width = "40px";
+    btn.style.height = "40px";
+    btn.style.padding = "0";
+    btn.style.border = "none";
+    btn.style.background = "transparent";
+    btn.style.cursor = "pointer";
+    btn.style.position = "fixed";
+    btn.style.bottom = "20px";
+    btn.style.right = "20px";
+    btn.style.zIndex = "9999";
+    
     btn.addEventListener("click", () => {
       const pannello = document.getElementById(ID_PANNELLO);
       pannello.classList.toggle("p4c-aperto");
+      // fix bottone con pannello aperto
+      btn.style.display = pannello.classList.contains("p4c-aperto") ? "none" : "block";
     });
+    
     document.body.appendChild(btn);
+    return btn;
   }
 
   function creaPannello() {
@@ -20,14 +47,20 @@
     pannello.id = ID_PANNELLO;
     pannello.innerHTML = `
       <div class="p4c-header">
-        <span>Your Pins</span>
+        <span>I tuoi Pin</span>
         <button class="p4c-chiudi">x</button>
       </div>
       <div class="p4c-lista"></div>
     `;
+    
+    // Gestione chiusura pannello
     pannello.querySelector(".p4c-chiudi").addEventListener("click", () => {
       pannello.classList.remove("p4c-aperto");
+      // mostra di nuovo il bottone
+      const toggle = document.getElementById(ID_TOGGLE);
+      if (toggle) toggle.style.display = "block";
     });
+    
     document.body.appendChild(pannello);
     return pannello;
   }
@@ -41,12 +74,12 @@
       await navigator.clipboard.write([
         new ClipboardItem({ [finalBlob.type]: finalBlob }),
       ]);
-      btn.textContent = "Copied ✓";
-      setTimeout(() => (btn.textContent = "Copy"), 1500);
+      btn.textContent = "Copiato ✓";
+      setTimeout(() => (btn.textContent = "Copia"), 1500);
     } catch (err) {
-      btn.textContent = "Error";
-      console.error("Error copying :(", err);
-      setTimeout(() => (btn.textContent = "Copy"), 1500);
+      btn.textContent = "Errore";
+      console.error("Errore copia :(", err);
+      setTimeout(() => (btn.textContent = "Copia"), 1500);
     }
   }
 
@@ -58,54 +91,18 @@
         canvas.width = img.naturalWidth;
         canvas.height = img.naturalHeight;
         canvas.getContext("2d").drawImage(img, 0, 0);
-        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Error toBlob"))), "image/png");
+        canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("Errore toBlob"))), "image/png");
       };
       img.onerror = reject;
       img.src = URL.createObjectURL(blob);
     });
   }
 
-  async function rimuoviSfondoPin(pin, divElemento) {
-    const { chiaveRemoveBg } = await chrome.storage.local.get("chiaveRemoveBg");
-    if (!chiaveRemoveBg) {
-      alert("Enter your remove.bg API Key in the popup");
-      return;
-    }
-
-    const elaborazione = document.createElement("div");
-    elaborazione.className = "p4c-elaborazione";
-    elaborazione.textContent = "Removing background...";
-    divElemento.appendChild(elaborazione);
-
-    try {
-      const risposta = await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ azione: "rimuoviBg", imageUrl: pin.src, apiKey: chiaveRemoveBg }, resolve);
-      });
-
-      if (risposta.ok) {
-        const { savedPins } = await chrome.storage.local.get("savedPins");
-        const pinsAggiornati = savedPins.map(p => {
-          if (p.src === pin.src) {
-            return { ...p, originalSrc: p.src, src: risposta.dataUrl, noBg: true };
-          }
-          return p;
-        });
-        await chrome.storage.local.set({ savedPins: pinsAggiornati });
-      } else {
-        alert("Error: " + risposta.errore);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      elaborazione.remove();
-    }
-  }
-
   function renderizzaLista(pannello, pins) {
     const lista = pannello.querySelector(".p4c-lista");
     lista.innerHTML = "";
     if (!pins.length) {
-      lista.innerHTML = `<div class="p4c-vuoto">Nothing has been saved yet!</div>`;
+      lista.innerHTML = `<div class="p4c-vuoto">Nothing saved yet!</div>`;
       return;
     }
     pins.forEach((pin) => {
@@ -127,20 +124,11 @@
 
       const btnCopia = document.createElement("button");
       btnCopia.className = "p4c-copia";
-      btnCopia.textContent = "Copy";
+      btnCopia.textContent = "Copia";
       btnCopia.addEventListener("click", () => copiaImmagine(pin.src, btnCopia));
 
       elemento.appendChild(img);
       elemento.appendChild(btnCopia);
-
-      if (!pin.noBg) {
-        const btnBg = document.createElement("button");
-        btnBg.className = "p4c-rimuovi-bg";
-        btnBg.textContent = "✂️ BG";
-        btnBg.title = "Remove background";
-        btnBg.addEventListener("click", () => rimuoviSfondoPin(pin, elemento));
-        elemento.appendChild(btnBg);
-      }
 
       lista.appendChild(elemento);
     });
@@ -156,7 +144,7 @@
     const pannello = creaPannello();
     caricaERenderizza(pannello);
     chrome.storage.onChanged.addListener((cambiamenti, area) => {
-      if (area === "local" && (cambiamenti.savedPins || cambiamenti.chiaveRemoveBg)) {
+      if (area === "local" && cambiamenti.savedPins) {
         caricaERenderizza(pannello);
       }
     });

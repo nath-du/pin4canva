@@ -1,5 +1,3 @@
-// Background service worker
-
 function attendi(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -84,7 +82,7 @@ async function cercaSuPinterest(query) {
   }
 }
 
-// Chiama API remove.bg
+// APIremove.bg
 async function rimuoviSfondo(imageUrl, apiKey) {
   if (!apiKey) throw new Error("API Key missing");
   
