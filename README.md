@@ -1,3 +1,5 @@
+> ⚠️ **Notice:** Remove.bg is about to be locked behind a paywall. For this reason, I've added 3 new background removal services. I recommend **Alphelo** as it is currently the most effective. Enjoy!
+
 # Pin4canva
 
 ## Description
@@ -17,15 +19,23 @@ All in **seconds**, so you don’t have to:
 
 ---
 
-## Remove.bg API Key
+## Background Removal Services
 
-To use the background removal feature, you need a **Remove.bg API key**. Here’s how to get one:
+The extension now supports **4 different background removal services**, and you can choose which one to use from the settings:
 
-1. **Sign up** on [Remove.bg](https://www.remove.bg/)
-2. Go to the [API Dashboard](https://www.remove.bg/api)
-3. **Create an API key** and copy it
+1. **Alphelo** *(Recommended)* — Get a free API key at [Alphelo](https://www.alphelo.com/account/)
+2. **Remove.bg** — Get an API key at [Remove.bg](https://www.remove.bg/api)
+3. **Clipdrop** — Get an API key at [Clipdrop](https://clipdrop.co/apis)
+4. **Photoroom** — Get an API key at [Photoroom](https://www.photoroom.com/api)
 
-Paste it into the extension settings.
+To use background removal:
+
+1. **Sign up** on the service of your choice
+2. **Create an API key** and copy it
+3. Paste it into the extension settings under the corresponding service
+4. Select the service from the dropdown in the search view
+
+> 💡 **Tip:** Alphelo offers a free tier with 100 images per month, which is a great starting point.
 
 ---
 
