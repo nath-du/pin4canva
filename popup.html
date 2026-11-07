@@ -51,6 +51,12 @@
         <span class="slider"></span>
       </label>
       <span class="toggle-label">Background remover</span>
+      <select id="servizioBg" class="servizio-select" title="Servizio rimozione sfondo" disabled>
+        <option value="alphelo">Alphelo</option>
+        <option value="removebg">Remove.bg</option>
+        <option value="clipdrop">Clipdrop</option>
+        <option value="photoroom">Photoroom</option>
+      </select>
     </div>
 
     <div id="status" class="status"></div>
@@ -73,8 +79,20 @@
       </div>
       <div class="dialog-body">
         <div class="text-field-outlined">
-          <label for="apiKeyInput">Remove.bg API Key</label>
-          <input type="password" id="apiKeyInput" placeholder="Your API Key Here" autocomplete="off" />
+          <label for="keyAlphelo">Alphelo API Key</label>
+          <input type="password" id="keyAlphelo" placeholder="alp_…" autocomplete="off" />
+        </div>
+        <div class="text-field-outlined">
+          <label for="keyRemovebg">Remove.bg API Key</label>
+          <input type="password" id="keyRemovebg" placeholder="API key here" autocomplete="off" />
+        </div>
+        <div class="text-field-outlined">
+          <label for="keyClipdrop">Clipdrop API Key</label>
+          <input type="password" id="keyClipdrop" placeholder="API key here" autocomplete="off" />
+        </div>
+        <div class="text-field-outlined">
+          <label for="keyPhotoroom">Photoroom API Key</label>
+          <input type="password" id="keyPhotoroom" placeholder="API key here" autocomplete="off" />
         </div>
       </div>
       <div class="dialog-footer">

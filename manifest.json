@@ -1,20 +1,23 @@
 {
   "manifest_version": 3,
   "name": "Pin4Canva",
-  "version": "1.3.0",
-  "description": "ELementi gratuiti per Canva: Cerca da Pinterest, rimuovi sfondo, trascina su Canva.",
+  "version": "1.4.0",
+  "description": "Elementi gratuiti per Canva: cerca da Pinterest, rimuovi sfondo, trascina su Canva.",
   "permissions": ["storage", "tabs", "scripting", "clipboardWrite"],
   "host_permissions": [
     "https://*.pinterest.com/*",
     "https://*.pinimg.com/*",
     "https://*.canva.com/*",
-    "https://api.remove.bg/*"
+    "https://api.remove.bg/*",
+    "https://api.alphelo.com/*",
+    "https://clipdrop-api.co/*",
+    "https://sdk.photoroom.com/*"
   ],
   "web_accessible_resources": [
-  {
-    "resources": ["icons/icon128-nobg.png"],
-    "matches": ["<all_urls>"]
-  }
+    {
+      "resources": ["icons/icon128-nobg.png"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "action": {
     "default_popup": "popup.html",

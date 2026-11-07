@@ -1,4 +1,4 @@
-// Gestine tab e viste
+// Gestione tab e viste
 const tabCerca = document.querySelector('[data-tab="search"]');
 const tabSalvati = document.querySelector('[data-tab="collection"]');
 const vistaCerca = document.getElementById('searchView');
@@ -9,13 +9,26 @@ const risultatiCerca = document.getElementById('resultsGrid');
 const risultatiSalvati = document.getElementById('collectionGrid');
 const badge = document.getElementById('collectionBadge');
 const autoToggle = document.getElementById('autoRemoveBg');
+const servizioBg = document.getElementById('servizioBg');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsDialog = document.getElementById('settingsDialog');
 const settingsClose = document.getElementById('settingsClose');
 const settingsCancel = document.getElementById('settingsCancel');
 const settingsSave = document.getElementById('settingsSave');
-const apiKeyInput = document.getElementById('apiKeyInput');
 const searchBtn = document.getElementById('searchBtn');
+
+// Campi chiavi per servizio
+const keyAlphelo = document.getElementById('keyAlphelo');
+const keyRemovebg = document.getElementById('keyRemovebg');
+const keyClipdrop = document.getElementById('keyClipdrop');
+const keyPhotoroom = document.getElementById('keyPhotoroom');
+
+const campiChiavi = {
+  alphelo: keyAlphelo,
+  removebg: keyRemovebg,
+  clipdrop: keyClipdrop,
+  photoroom: keyPhotoroom,
+};
 
 // Cambia scheda
 function cambiaTab(nome) {
@@ -46,7 +59,7 @@ async function salvaLista(lista) {
 // Aggiungi / Rimuovi pin
 async function aggiungiPin(pin) {
   const lista = await ottieniSalvati();
-  if (lista.some(p => p.src === pin.src)) return false;
+  if (lista.some((p) => p.src === pin.src)) return false;
   lista.unshift(pin);
   await salvaLista(lista);
   return true;
@@ -54,25 +67,36 @@ async function aggiungiPin(pin) {
 
 async function rimuoviPin(src) {
   const lista = await ottieniSalvati();
-  await salvaLista(lista.filter(p => p.src !== src));
+  await salvaLista(lista.filter((p) => p.src !== src));
 }
 
 // Rimozione sfondo via background
-async function rimuoviSfondo(imageUrl, apiKey) {
+async function rimuoviSfondo(imageUrl, apiKey, servizio) {
   return new Promise((resolve) => {
-    chrome.runtime.sendMessage({ azione: 'rimuoviBg', imageUrl, apiKey }, resolve);
+    chrome.runtime.sendMessage(
+      { azione: 'rimuoviBg', imageUrl, apiKey, servizio },
+      resolve
+    );
   });
 }
 
-// Gestione aggiunta con eventuale remove.bg
+// # Gestione Aggiunta Pin
 async function gestisciAggiuntaPin(pin, cardDiv) {
   const btn = cardDiv.querySelector('.card-btn');
-  const apiKey = apiKeyInput.value.trim();
+  const servizio = servizioBg.value;
   const autoRimuovi = autoToggle.checked;
+
+  const { chiaviApi } = await chrome.storage.local.get('chiaviApi');
+  const apiKey = chiaviApi?.[servizio] || '';
+
+  if (autoRimuovi && !apiKey) {
+    alert(`Inserisci la API key per ${servizio} nelle impostazioni`);
+    return;
+  }
+
   let pinDaSalvare = { ...pin };
 
   if (autoRimuovi && apiKey) {
-    // Overlay elaborazione
     const overlay = document.createElement('div');
     overlay.className = 'overlay-busy';
     overlay.innerHTML = `<span class="material-icons">refresh</span> Rimozione sfondo…`;
@@ -80,11 +104,12 @@ async function gestisciAggiuntaPin(pin, cardDiv) {
     btn.disabled = true;
 
     try {
-      const risposta = await rimuoviSfondo(pin.src, apiKey);
+      const risposta = await rimuoviSfondo(pin.src, apiKey, servizio);
       if (risposta.ok) {
         pinDaSalvare.originalSrc = pin.src;
         pinDaSalvare.src = risposta.dataUrl;
         pinDaSalvare.noBg = true;
+        pinDaSalvare.servizioBg = servizio;
       } else {
         alert('Errore rimozione sfondo: ' + (risposta.errore || 'sconosciuto'));
       }
@@ -115,7 +140,7 @@ function renderizzaRisultati(pins) {
       `<div class="empty-state"><span class="material-icons">search_off</span>Nessun risultato trovato</div>`;
     return;
   }
-  pins.forEach(pin => {
+  pins.forEach((pin) => {
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
@@ -138,7 +163,7 @@ async function renderizzaSalvati() {
       `<div class="empty-state"><span class="material-icons">inbox</span>Nessun pin salvato</div>`;
     return;
   }
-  lista.forEach(pin => {
+  lista.forEach((pin) => {
     const div = document.createElement('div');
     div.className = 'card';
     div.innerHTML = `
@@ -192,7 +217,7 @@ inputCerca.addEventListener('keydown', (e) => {
 // # Dialog impostazioni
 function apriSettings() {
   settingsDialog.classList.remove('hidden');
-  apiKeyInput.focus();
+  campiChiavi[servizioBg.value]?.focus();
 }
 
 function chiudiSettings() {
@@ -210,40 +235,65 @@ document.addEventListener('keydown', (e) => {
 });
 
 settingsSave.addEventListener('click', async () => {
-  const val = apiKeyInput.value.trim();
-  await chrome.storage.local.set({ chiaveRemoveBg: val });
+  const chiaviApi = {};
+  for (const [servizio, input] of Object.entries(campiChiavi)) {
+    chiaviApi[servizio] = input.value.trim();
+  }
+  await chrome.storage.local.set({ chiaviApi });
   chiudiSettings();
-  // feedback temporaneo
+
   const orig = settingsSave.textContent;
   settingsSave.textContent = '✅ Salvato';
-  setTimeout(() => { settingsSave.textContent = orig; }, 1200);
+  setTimeout(() => {
+    settingsSave.textContent = orig;
+  }, 1200);
 });
 
 // # Inizializzazione
 (async function init() {
-  // Carica impostazioni
-  const impostazioni = await chrome.storage.local.get(['autoRimuoviBg', 'chiaveRemoveBg']);
-  autoToggle.checked = !!impostazioni.autoRimuoviBg;
-  apiKeyInput.value = impostazioni.chiaveRemoveBg || '';
+  const impostazioni = await chrome.storage.local.get([
+    'autoRimuoviBg',
+    'chiaviApi',
+    'servizioBg',
+    'chiaveRemoveBg',
+  ]);
 
-  // Carica collezione
+  autoToggle.checked = !!impostazioni.autoRimuoviBg;
+  servizioBg.value = impostazioni.servizioBg || 'alphelo';
+  servizioBg.disabled = !autoToggle.checked;
+
+  let chiavi = impostazioni.chiaviApi || {};
+
+  // Migrazione vecchia chiave
+  if (impostazioni.chiaveRemoveBg && !chiavi.removebg) {
+    chiavi.removebg = impostazioni.chiaveRemoveBg;
+    await chrome.storage.local.set({ chiaviApi: chiavi });
+    await chrome.storage.local.remove('chiaveRemoveBg');
+  }
+
+  for (const [servizio, input] of Object.entries(campiChiavi)) {
+    if (input) input.value = chiavi[servizio] || '';
+  }
+
+  autoToggle.addEventListener('change', () => {
+    chrome.storage.local.set({ autoRimuoviBg: autoToggle.checked });
+    servizioBg.disabled = !autoToggle.checked;
+  });
+
+  servizioBg.addEventListener('change', () => {
+    chrome.storage.local.set({ servizioBg: servizioBg.value });
+  });
+
   const lista = await ottieniSalvati();
   badge.textContent = lista.length;
   renderizzaSalvati();
 
-  // Salva toggle auto-rimozione
-  autoToggle.addEventListener('change', () => {
-    chrome.storage.local.set({ autoRimuoviBg: autoToggle.checked });
-  });
-
-  // Aggiorna collezione se cambia storage
   chrome.storage.onChanged.addListener((cambiamenti, area) => {
     if (area === 'local' && cambiamenti.savedPins) {
       renderizzaSalvati();
     }
   });
 
-  // Query da URL (opzionale)
   const urlParams = new URLSearchParams(window.location.search);
   const q = urlParams.get('q');
   if (q) {

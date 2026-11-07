@@ -283,6 +283,32 @@ input {
   font-weight: 400;
 }
 
+/* Selettore servizio rimozione sfondo */
+.servizio-select {
+  margin-left: auto;
+  padding: 4px 8px;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  font-size: 12px;
+  background: #ffffff;
+  color: #202124;
+  font-family: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  max-width: 110px;
+}
+
+.servizio-select:focus {
+  border-color: #e60023;
+  outline: none;
+}
+
+.servizio-select:disabled {
+  background: #f1f3f4;
+  color: #9aa0a6;
+  cursor: not-allowed;
+}
+
 /* Status */
 .status {
   font-size: 12px;

@@ -1,5 +1,3 @@
-// Pannello Pinterest in Canva
-
 (function () {
   const ID_PANNELLO = "p4c-pannello";
   const ID_TOGGLE = "p4c-toggle";
